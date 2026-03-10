@@ -504,10 +504,10 @@ async function handleExport({
       mimeType = "text/html;charset=utf-8";
       extension = "html";
     } else if (format === "pdf") {
-      // For PDF, generate HTML and let the user print-to-PDF
+      // Generate HTML and open in new tab with "Save as PDF" button
       content = exportToHtml(messages, channelName, guildName);
       mimeType = "text/html;charset=utf-8";
-      extension = "html"; // Will open in new tab for print
+      extension = "html";
     }
 
     // Sanitize filename: remove characters not allowed in filenames
@@ -517,33 +517,73 @@ async function handleExport({
       .substring(0, 100);
     const filename = `${safeName}-${new Date().toISOString().slice(0, 10)}.${extension}`;
 
-    // Encode content as base64 data URL
-    const encoder = new TextEncoder();
-    const bytes = encoder.encode(content);
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = btoa(binary);
-    const dataUrl = `data:${mimeType};base64,${base64}`;
-
     if (format === "pdf") {
-      // Open HTML in new tab, user can Ctrl+P / Cmd+P to save as PDF
-      chrome.tabs.create({ url: dataUrl }, (tab) => {
-        setTimeout(() => {
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: () => {
-              // Add print-friendly styles and trigger print dialog
-              const style = document.createElement("style");
-              style.textContent = "@media print { body { background: white !important; color: black !important; } .message:hover { background: none !important; } }";
-              document.head.appendChild(style);
-              window.print();
-            },
-          });
-        }, 1500);
-      });
+      // For PDF: inject "Save as PDF" button and print styles, open in new tab
+      const pdfButton = `
+<style>
+  #pdf-save-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 99999;
+    background: #5865f2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  #pdf-save-btn:hover { background: #4752c4; }
+  @media print {
+    #pdf-save-btn { display: none !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .export-header { background: #f5f5f5 !important; border-bottom-color: #ddd !important; }
+    .export-header h1 { color: #000 !important; }
+    .export-header .meta { color: #555 !important; }
+    .messages { padding: 8px 0 !important; }
+    .message:hover { background: transparent !important; }
+    .message.pinned { border-left-color: #f0b232 !important; }
+    .message-header .author { color: #000 !important; }
+    .message-header .timestamp { color: #555 !important; }
+    .message-content { color: #000 !important; }
+    .message-content strong { color: #000 !important; }
+    .message-content code { background: #eee !important; color: #000 !important; }
+    .message-content pre { background: #f5f5f5 !important; }
+    .message-content a { color: #0066cc !important; }
+    .reply, .attachments, .embeds { color: #555 !important; }
+    .reactions { color: #333 !important; }
+    .separator::before { background: #ddd !important; }
+    .separator span { background: #fff !important; color: #555 !important; }
+    .footer { color: #555 !important; border-top-color: #ddd !important; }
+  }
+  @page { margin: 1cm; }
+</style>
+<button id="pdf-save-btn" onclick="this.style.display='none';window.print();">PDF로 저장</button>`;
+      content = content.replace("</body>", pdfButton + "\n</body>");
+
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(content);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+      const dataUrl = `data:text/html;charset=utf-8;base64,${base64}`;
+      chrome.tabs.create({ url: dataUrl, active: true });
     } else {
+      // For HTML/CSV: direct download
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(content);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+      const dataUrl = `data:${mimeType};base64,${base64}`;
       chrome.downloads.download({
         url: dataUrl,
         filename: filename,

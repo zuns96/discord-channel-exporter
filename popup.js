@@ -17,11 +17,20 @@ const progressFill = document.getElementById("progress-fill");
 
 // Initialize
 document.addEventListener("DOMContentLoaded", async () => {
-  // Set default date range: last 30 days
+  // Restore saved settings or use defaults (last 30 days, html)
+  const saved = await chrome.storage.local.get(["afterDate", "beforeDate", "format"]);
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  dateBeforeEl.value = now.toISOString().slice(0, 10);
-  dateAfterEl.value = thirtyDaysAgo.toISOString().slice(0, 10);
+  dateBeforeEl.value = saved.beforeDate || now.toISOString().slice(0, 10);
+  dateAfterEl.value = saved.afterDate || thirtyDaysAgo.toISOString().slice(0, 10);
+
+  // Restore format selection
+  if (saved.format) {
+    selectedFormat = saved.format;
+    document.querySelectorAll(".format-btn").forEach((b) => {
+      b.classList.toggle("selected", b.dataset.format === saved.format);
+    });
+  }
 
   // Get current tab
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -52,6 +61,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// Save date settings on change
+dateAfterEl.addEventListener("change", () => {
+  chrome.storage.local.set({ afterDate: dateAfterEl.value });
+});
+dateBeforeEl.addEventListener("change", () => {
+  chrome.storage.local.set({ beforeDate: dateBeforeEl.value });
+});
+
 // Format button selection
 document.querySelectorAll(".format-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -60,6 +77,7 @@ document.querySelectorAll(".format-btn").forEach((btn) => {
       .forEach((b) => b.classList.remove("selected"));
     btn.classList.add("selected");
     selectedFormat = btn.dataset.format;
+    chrome.storage.local.set({ format: selectedFormat });
   });
 });
 
