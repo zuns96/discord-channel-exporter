@@ -72,9 +72,25 @@ discord-channel-exporter/
 ├── popup.html      # Extension popup UI (Discord dark theme)
 ├── popup.js        # Popup interaction logic
 ├── icons/          # Extension icons (16/48/128px)
+├── package.sh      # Build script for macOS/Linux
+├── package.bat     # Build script for Windows
 ├── LICENSE         # MIT License
 └── README.md
 ```
+
+## Packaging
+
+Build a `.zip` file for distribution or Chrome Web Store upload:
+
+```bash
+# macOS / Linux
+./package.sh
+
+# Windows
+package.bat
+```
+
+This reads the version from `manifest.json` and produces `discord-channel-exporter-v{version}.zip`.
 
 ## Limitations
 
@@ -135,6 +151,36 @@ discord-channel-exporter/
 1. **Content Script**가 페이지 URL에서 채널 ID를, `localStorage`에서 인증 토큰을 추출합니다.
 2. **Background Service Worker**가 Discord REST API (v10)를 호출하여 지정된 기간의 메시지를 페이지네이션으로 수집합니다. [Snowflake ID](https://discord.com/developers/docs/reference#snowflakes)를 사용하여 날짜 기반 커서 페이지네이션을 수행합니다.
 3. 메시지를 선택한 포맷으로 변환한 뒤 `chrome.downloads` API로 다운로드합니다 (PDF는 새 탭에서 열림).
+
+## 프로젝트 구조
+
+```
+discord-channel-exporter/
+├── manifest.json   # Chrome Extension Manifest V3
+├── background.js   # 서비스 워커: API 호출, 메시지 수집, 포맷 변환
+├── content.js      # 콘텐츠 스크립트: 채널 감지, 토큰 추출
+├── popup.html      # 팝업 UI (Discord 다크 테마)
+├── popup.js        # 팝업 인터랙션 로직
+├── icons/          # 확장 아이콘 (16/48/128px)
+├── package.sh      # 빌드 스크립트 (macOS/Linux)
+├── package.bat     # 빌드 스크립트 (Windows)
+├── LICENSE         # MIT 라이선스
+└── README.md
+```
+
+## 패키징
+
+배포용 또는 Chrome 웹 스토어 업로드용 `.zip` 파일을 생성합니다:
+
+```bash
+# macOS / Linux
+./package.sh
+
+# Windows
+package.bat
+```
+
+`manifest.json`에서 버전을 읽어 `discord-channel-exporter-v{version}.zip` 파일을 생성합니다.
 
 ## 제한 사항
 
