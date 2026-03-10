@@ -8,7 +8,7 @@
 
 - **Auto-detect channel** — Automatically detects the Discord channel you're currently viewing
 - **Date range filtering** — Export only messages within a specific date range
-- **Multiple export formats** — HTML (Discord dark theme), CSV (Excel-compatible), PDF (새 탭에서 인쇄 다이얼로그로 저장)
+- **Multiple export formats** — HTML (Discord dark theme), CSV (Excel-compatible), PDF (opens in new tab with print dialog)
 - **Discord markdown support** — Bold, italic, code blocks, links, and more are preserved in HTML export
 - **Rate limit handling** — Automatically waits and retries when Discord API rate limits are hit
 - **Progress tracking** — Real-time progress indicator while fetching messages
@@ -96,7 +96,7 @@ This reads the version from `manifest.json` and produces `discord-channel-export
 
 - This extension uses your Discord **user token** from the browser session. Using user tokens for automation is against [Discord's Terms of Service](https://discord.com/terms). Use at your own risk.
 - Very large exports (100,000+ messages) may hit browser memory limits due to base64 encoding for the download. Consider narrowing the date range for large channels.
-- PDF export opens the HTML in a new tab. Use the "PDF로 저장" button to open the browser print dialog, then select "Save as PDF".
+- PDF export opens the HTML in a new tab. Use the "Save as PDF" button to open the browser print dialog, then select "Save as PDF".
 
 ## License
 
