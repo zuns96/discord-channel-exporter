@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 360px;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #2b2d31;
+    color: #dbdee1;
+  }
+
+  .header {
+    background: #1e1f22;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #3f4147;
+  }
+  .header svg { flex-shrink: 0; }
+  .header h1 {
+    font-size: 14px;
+    color: #f2f3f5;
+    font-weight: 600;
+  }
+
+  .content { padding: 16px; }
+
+  .channel-info {
+    background: #1e1f22;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .channel-info .server {
+    font-size: 11px;
+    color: #949ba4;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .channel-info .channel {
+    font-size: 15px;
+    color: #f2f3f5;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .channel-info .channel::before {
+    content: '#';
+    color: #949ba4;
+    margin-right: 2px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #b5bac1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .date-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .date-field {
+    flex: 1;
+  }
+  .date-field label {
+    display: block;
+    font-size: 12px;
+    color: #949ba4;
+    margin-bottom: 4px;
+  }
+  .date-field input {
+    width: 100%;
+    background: #1e1f22;
+    border: 1px solid #3f4147;
+    border-radius: 4px;
+    padding: 8px;
+    color: #dbdee1;
+    font-size: 13px;
+    outline: none;
+  }
+  .date-field input:focus {
+    border-color: #5865f2;
+  }
+  .date-field input::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+  }
+
+  .format-section { margin-bottom: 16px; }
+  .format-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  .format-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #3f4147;
+    border-radius: 8px;
+    background: #1e1f22;
+    color: #dbdee1;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .format-btn:hover {
+    border-color: #5865f2;
+    background: #2e3035;
+  }
+  .format-btn.selected {
+    border-color: #5865f2;
+    background: #3c4270;
+    color: #f2f3f5;
+  }
+  .format-btn .icon {
+    font-size: 20px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .export-btn {
+    width: 100%;
+    padding: 12px;
+    background: #5865f2;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .export-btn:hover { background: #4752c4; }
+  .export-btn:active { background: #3c45a5; }
+  .export-btn:disabled {
+    background: #3f4147;
+    color: #949ba4;
+    cursor: not-allowed;
+  }
+
+  .status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .status.info {
+    display: block;
+    background: #1e1f22;
+    color: #949ba4;
+  }
+  .status.success {
+    display: block;
+    background: #1a3c2a;
+    color: #57f287;
+  }
+  .status.error {
+    display: block;
+    background: #3c1a1a;
+    color: #ed4245;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #1e1f22;
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+    display: none;
+  }
+  .progress-bar.active { display: block; }
+  .progress-bar .fill {
+    height: 100%;
+    background: #5865f2;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .not-discord {
+    text-align: center;
+    padding: 32px 16px;
+    color: #949ba4;
+  }
+  .not-discord .icon { font-size: 48px; margin-bottom: 12px; }
+  .not-discord p { font-size: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="#5865f2">
+      <path d="M19.73 4.87a18.2 18.2 0 0 0-4.6-1.44c-.2.36-.43.85-.59 1.23a16.84 16.84 0 0 0-5.07 0c-.16-.38-.4-.87-.6-1.23a18.17 18.17 0 0 0-4.6 1.44A19.25 19.25 0 0 0 .96 18.06a18.56 18.56 0 0 0 5.65 2.88 13.36 13.36 0 0 0 1.18-1.94 11.78 11.78 0 0 1-1.87-.91c.16-.12.31-.24.46-.36a13.23 13.23 0 0 0 11.24 0c.15.13.3.25.46.36-.6.36-1.22.67-1.87.91.34.7.74 1.36 1.18 1.94a18.5 18.5 0 0 0 5.66-2.88A19.18 19.18 0 0 0 19.73 4.87zM8.34 15.4c-1.12 0-2.04-1.05-2.04-2.33s.9-2.33 2.04-2.33 2.06 1.05 2.04 2.33c0 1.28-.9 2.33-2.04 2.33zm7.32 0c-1.12 0-2.04-1.05-2.04-2.33s.9-2.33 2.04-2.33 2.06 1.05 2.04 2.33c0 1.28-.9 2.33-2.04 2.33z"/>
+    </svg>
+    <h1>Discord Channel Exporter</h1>
+  </div>
+
+  <div id="main-content" class="content" style="display:none;">
+    <div class="channel-info">
+      <div class="server" id="server-name"></div>
+      <div class="channel" id="channel-name"></div>
+    </div>
+
+    <div class="section-title">Export Period</div>
+    <div class="date-row">
+      <div class="date-field">
+        <label>Start Date</label>
+        <input type="date" id="date-after">
+      </div>
+      <div class="date-field">
+        <label>End Date</label>
+        <input type="date" id="date-before">
+      </div>
+    </div>
+
+    <div class="format-section">
+      <div class="section-title">Format</div>
+      <div class="format-buttons">
+        <button class="format-btn selected" data-format="html">
+          <span class="icon">&lt;/&gt;</span>
+          HTML
+        </button>
+        <button class="format-btn" data-format="csv">
+          <span class="icon">&#x1f4ca;</span>
+          CSV
+        </button>
+        <button class="format-btn" data-format="pdf">
+          <span class="icon">&#x1f4c4;</span>
+          PDF
+        </button>
+      </div>
+    </div>
+
+    <button class="export-btn" id="export-btn">Export Messages</button>
+
+    <div class="progress-bar" id="progress-bar">
+      <div class="fill" id="progress-fill"></div>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div id="not-discord" class="not-discord" style="display:none;">
+    <div class="icon">&#x1f50d;</div>
+    <p>Discord 웹 페이지에서<br>채널을 열고 사용하세요.</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
